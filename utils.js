@@ -10,6 +10,7 @@ program
   .description("Expense tracker CLI")
   .version("0.8.0");
 
+//add an expense
 program
   .command("add")
   .description("add an expense")
@@ -49,6 +50,7 @@ program
     });
   });
 
+//delete an expense
 program
   .command("delete")
   .description("delete an expense")
@@ -71,21 +73,63 @@ program
         }
 
         fs.writeFile(filePath, JSON.stringify(allExpenses), (err) => {
-          if (err) throw err;
-          console.log(`Expense successfully deleted`);
-        });
+          if (err) {
+            throw err;
+          } else {
+            console.log(`Expense successfully deleted`);
 
-        if (allExpenses.length === 0) {
-          fs.unlink(filePath, (err) => {
-            if (err) {
-              throw err;
-            } else {
-              console.log(
-                "All expenses deleted. \nDeleting file ... ... ... \nFile successfully deleted."
-              );
+            //delete file if all expenses are deleted.
+            if (allExpenses.length === 0) {
+              fs.unlink(filePath, (err) => {
+                if (err) {
+                  throw err;
+                } else {
+                  console.log(
+                    "All expenses deleted. \nDeleting file ... ... ... \nFile successfully deleted."
+                  );
+                }
+              });
             }
-          });
+          }
+        });
+      }
+    });
+  });
+
+//update an expense
+program
+  .command("update")
+  .description("update an expense")
+  .requiredOption("--id <id>", "id of the expense to update")
+  .option("--description <expense>", "update expense")
+  .option("--amount <amount>", "update amount spent")
+  .action((options) => {
+    fs.readFile(filePath, "utf-8", (err, data) => {
+      if (err) {
+        console.log("No such file exists: ", err);
+      } else {
+        let allExpenses = JSON.parse(data);
+        if (!options.description && !options.amount) {
+          console.error(
+            "Error: At least one of --description or --amount is required."
+          );
+          process.exit(1);
+        } else if (options.description && options.amount) {
+          allExpenses[options.id - 1].description = options.description;
+          allExpenses[options.id - 1].amount = options.amount;
+        } else if (!options.description && options.amount) {
+          allExpenses[options.id - 1].amount = options.amount;
+        } else {
+          allExpenses[options.id - 1].description = options.description;
         }
+
+        fs.writeFile(filePath, JSON.stringify(allExpenses), (err) => {
+          if (err) {
+            throw err;
+          } else {
+            console.log(`Expense successfully updated`);
+          }
+        });
       }
     });
   });
