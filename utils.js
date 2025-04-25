@@ -134,4 +134,24 @@ program
     });
   });
 
+//list all expenses
+program
+  .command("list")
+  .description("list all expense")
+  .action(() => {
+    fs.readFile(filePath, "utf-8", (err, data) => {
+      if (err) {
+        console.log("No such file exists: ", err);
+      } else {
+        let allExpenses = JSON.parse(data);
+        console.log("ID  Date                    Description  Amount");
+        allExpenses.forEach((element) => {
+          console.log(
+            `${element.id}   ${element.date}   ${element.description}        $${element.amount}`
+          );
+        });
+      }
+    });
+  });
+
 program.parse();
