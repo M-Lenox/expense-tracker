@@ -158,20 +158,36 @@ program
 program
   .command("summary")
   .description("summary of all expenses")
-  .option("--month", "summary of the month (current year)")
-  .action(() => {
+  .option("--month <number>", "summary of the month (current year)")
+  .action((options) => {
     fs.readFile(filePath, "utf-8", (err, data) => {
       if (err) {
         console.log("No such file exists: ", err);
       } else {
-        const allExpenses = JSON.parse(data);
+        if (!options.amount) {
+          const allExpenses = JSON.parse(data);
 
-        let totalAmount = 0;
-        allExpenses.forEach((expense) => {
-          const amount = Number(expense.amount);
-          totalAmount += amount;
-        });
-        console.log(`Total expenses: $${totalAmount}`);
+          let totalAmount = 0;
+          allExpenses.forEach((expense) => {
+            const amount = Number(expense.amount);
+            totalAmount += amount;
+          });
+          console.log(`Total expenses: $${totalAmount}`);
+        } else {
+          const currentYear = new Date().getFullYear();
+          const month = options.month;
+          let totalMonthlyAmount = 0;
+
+          allExpenses.forEach((expense) => {
+            if (
+              currentYear === expense.date.getFullYear() &&
+              expense.date.getMonth() == options.month - 1
+            ) {
+              const amount = Number(expense.amount);
+              totalMonthlyAmount += amount;
+            }
+          });
+        }
       }
     });
   });
